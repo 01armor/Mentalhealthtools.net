@@ -1,0 +1,4 @@
+# GitHub Pages settings. README.md is for people browsing the repository,
+# not a page on the website. Files starting with "_" are never published.
+exclude:
+  - README.md
