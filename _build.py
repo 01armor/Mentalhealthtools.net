@@ -251,14 +251,9 @@ CONTACT = page(f"Contact · {LEGAL_NAME}",
   </div>
 </section>
 <section class="block tight">
-  <div class="wrap grid-2">
-    <div class="panel">
+  <div class="wrap">
+    <div class="panel narrow">
       {company_details()}
-    </div>
-    <div>
-      <h2>Email is fastest</h2>
-      <p>Write to {MAIL}. We read every message.</p>
-      <p class="small">{CRISIS}</p>
     </div>
   </div>
 </section>
