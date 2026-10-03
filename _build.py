@@ -98,7 +98,7 @@ CLEARDAY_SUMMARY = f'''<article class="product">
       <div class="product-icon">{DROP}</div>
       <div class="product-body">
         <h3 class="product-name">Clearday</h3>
-        <p class="product-tag">A self-help app for adults who want to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
+        <p class="product-tag">A self-help app for anyone who wants to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
         <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 3-day trial, then a subscription</p>
         <a class="more" href="/products/clearday/">Clearday details and support</a>
       </div>
@@ -122,7 +122,7 @@ HOME = page(LEGAL_NAME,
   <div class="wrap grid-2">
     <div>
       <h2 id="about">About the company</h2>
-      <p>{LEGAL_NAME} is a software company based in New Jersey, founded in 2026. We design and publish mobile apps that help adults reflect on their habits and make changes at their own pace.</p>
+      <p>{LEGAL_NAME} is a software company based in New Jersey, founded in 2026. We design and publish mobile apps that help people reflect on their habits and make changes at their own pace.</p>
       <p>Our apps are self-help tools. They support reflection and habit change, and they are not therapy, medical care, or a substitute for a professional.</p>
     </div>
     <div class="panel">
@@ -172,7 +172,7 @@ PRODUCTS = page(f"Products · {LEGAL_NAME}",
 ''')
 
 CLEARDAY = page(f"Clearday · {LEGAL_NAME}",
-  "Clearday is a self-help app for adults who want to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace. Coming soon to iPhone.",
+  "Clearday is a self-help app for anyone who wants to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace. Coming soon to iPhone.",
   "products", f'''
 <section class="page-head">
   <div class="wrap">
@@ -181,7 +181,7 @@ CLEARDAY = page(f"Clearday · {LEGAL_NAME}",
       <div class="product-icon large">{DROP}</div>
       <div>
         <h1 class="app-name">Clearday</h1>
-        <p class="lede">A self-help app for adults who want to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
+        <p class="lede">A self-help app for anyone who wants to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
         <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 3-day trial, then a subscription. SOS for cravings is always free.</p>
       </div>
     </div>
@@ -217,7 +217,6 @@ CLEARDAY = page(f"Clearday · {LEGAL_NAME}",
       <ul class="list">
         <li>Clearday is a self-help app. It is not therapy, medical care or treatment, and it is not for emergencies</li>
         <li>If you drink heavily or every day, stopping suddenly can cause dangerous withdrawal, including seizures. Talk to a clinician before you stop or cut back sharply</li>
-        <li>Clearday is for adults 18 and over</li>
       </ul>
     </div>
   </div>
