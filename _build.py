@@ -5,7 +5,10 @@ Run:  python3 _build.py
 Edit the values below and rerun. Files starting with "_" are not published
 by GitHub Pages.
 """
+import json
 import os
+import re
+import shutil
 
 # The owner chose to list only the state (27 Sep 2026). Apple and D&B don't
 # require a street address or phone on the website: the D-U-N-S application
@@ -18,6 +21,42 @@ EMAIL = "support@mentalhealthtools.net"
 UPDATED = "September 27, 2026"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Clearday's policies live as data in _policies/ (never published as-is) and
+# are rendered below. PUBLISH_DATE is the day they take effect. While it's None
+# the build makes a review copy: a "Draft for review" banner on each policy
+# page and the open blanks highlighted. On publish day set it, e.g.
+#     PUBLISH_DATE = "October 14, 2026"
+# and rebuild: the date fills in [EFFECTIVE DATE] on both pages (and the website
+# privacy page's date), the banner goes, and the build refuses to run if any
+# other blank is still open.
+PUBLISH_DATE = "October 10, 2026"
+DRAFT = PUBLISH_DATE is None
+
+# Draft mode builds the live site exactly as it was before the policies (so a
+# commit and push in draft mode publishes nothing new) and writes the two policy
+# pages to _draft/, which GitHub Pages never serves: preview them at
+# http://localhost:4190/_draft/products/clearday/privacy/ . The pages and every
+# link to them appear only together, once PUBLISH_DATE is set.
+CLEARDAY_POLICY = "/products/clearday/privacy/"
+CLEARDAY_CHD = "/products/clearday/consumer-health-data/"
+if DRAFT:
+    POLICY_FOOTER = '''<a href="/privacy/">Privacy</a>
+      <a href="/terms/">Terms</a>'''
+    CLEARDAY_POLICY_ITEMS = "<li>Clearday's full privacy policy will be published here before launch</li>"
+    WEBSITE_PRIVACY_APPS = "Clearday: its privacy policy will be published on this site before the app launches."
+else:
+    # Connecticut wants a link with the word "privacy" to the app's privacy notice
+    # on the home page, and Washington a separate link to the health-data policy;
+    # the footer puts both on every page.
+    POLICY_FOOTER = f'''<a href="/privacy/">Website privacy</a>
+      <a href="/terms/">Terms</a>
+      <a href="{CLEARDAY_POLICY}">Clearday Privacy Policy</a>
+      <a href="{CLEARDAY_CHD}">Consumer Health Data Privacy Policy</a>'''
+    CLEARDAY_POLICY_ITEMS = (f'<li><a href="{CLEARDAY_POLICY}">Read the Clearday Privacy Policy</a></li>\n'
+                             f'        <li><a href="{CLEARDAY_CHD}">Consumer Health Data Privacy Policy</a> (Washington and Nevada)</li>')
+    WEBSITE_PRIVACY_APPS = (f'Clearday: <a href="{CLEARDAY_POLICY}">Privacy Policy</a> and '
+                            f'<a href="{CLEARDAY_CHD}">Consumer Health Data Privacy Policy</a>')
 
 MAIL = f'<a href="mailto:{EMAIL}">support@<wbr>mentalhealthtools.net</a>'
 
@@ -74,8 +113,7 @@ def page(title, description, current, body):
     <nav aria-label="Footer">
       <a href="/products/">Products</a>
       <a href="/contact/">Contact</a>
-      <a href="/privacy/">Privacy</a>
-      <a href="/terms/">Terms</a>
+      {POLICY_FOOTER}
     </nav>
   </div>
 </footer>
@@ -207,9 +245,9 @@ CLEARDAY = page(f"Clearday · {LEGAL_NAME}",
       <ul class="list">
         <li>No advertising, no third-party analytics, no ad identifiers</li>
         <li>We never sell, rent or trade your information</li>
-        <li>Reflections replies are written by an AI provider, Anthropic. It receives your messages and the progress details needed to reply, and does not use them to train its models</li>
+        <li>Reflections replies are written by an AI provider, Anthropic, only if you allow it. It then receives your messages and the progress details needed to reply, and does not use them to train its models</li>
         <li>Delete your account and everything stored in it yourself, any time</li>
-        <li>Clearday's full privacy policy will be published here before launch</li>
+        {CLEARDAY_POLICY_ITEMS}
       </ul>
     </div>
     <div>
@@ -265,7 +303,7 @@ PRIVACY = page(f"Privacy · {LEGAL_NAME}",
 <section class="page-head">
   <div class="wrap prose">
     <h1>Website privacy</h1>
-    <p class="updated">Last updated {UPDATED}</p>
+    <p class="updated">Last updated {PUBLISH_DATE or UPDATED}</p>
   </div>
 </section>
 <section class="block tight">
@@ -277,7 +315,7 @@ PRIVACY = page(f"Privacy · {LEGAL_NAME}",
     <h2>If you email us</h2>
     <p>We use your email address and message to reply and to handle what you ask for, such as a question about your Clearday account or data. Our email is hosted by Microsoft 365, which stores messages for us. We don't add you to a mailing list, and we don't sell or share your message with anyone else.</p>
     <h2>Our apps</h2>
-    <ul class="list"><li>Clearday: its privacy policy will be published on this site before the app launches.</li></ul>
+    <ul class="list"><li>{WEBSITE_PRIVACY_APPS}</li></ul>
     <h2>Contact</h2>
     <p>{LEGAL_NAME}, {LOCATION}. {MAIL}</p>
   </div>
@@ -314,6 +352,42 @@ TERMS = page(f"Terms · {LEGAL_NAME}",
 </section>
 ''')
 
+def policy_page(name, url_path, description):
+    doc = json.load(open(os.path.join(HERE, "_policies", name + ".json"), encoding="utf-8"))
+    body = doc["intro_html"] + "".join(
+        f'<h2 id="{s["id"]}">{s["heading"]}</h2>{s["html"]}' for s in doc["sections"])
+    if PUBLISH_DATE:
+        body = body.replace("[EFFECTIVE DATE]", PUBLISH_DATE)
+    holes = sorted(set(re.findall(r"\[(?:EFFECTIVE DATE|CONFIRM:[^\]]*)\]", body)))
+    if holes and not DRAFT:
+        raise SystemExit(f"{name}: fill these before publishing: {holes}")
+    if DRAFT:
+        body = re.sub(r"(\[(?:EFFECTIVE DATE|CONFIRM:[^\]]*)\])", r'<mark class="ph">\1</mark>', body)
+    toc = "".join(f'<li><a href="#{s["id"]}">{s["heading"]}</a></li>' for s in doc["sections"])
+    banner = ('<p class="draft-banner"><b>Draft for review.</b> Not published. '
+              'Highlighted items still need to be filled in.</p>') if DRAFT else ""
+    return page(f'{doc["title"]} · {LEGAL_NAME}', description, "products", f'''
+<section class="page-head">
+  <div class="wrap prose">
+    <p class="crumb"><a href="/products/">Products</a> &rsaquo; <a href="/products/clearday/">Clearday</a></p>
+    {banner}
+    <h1>{doc["title"]}</h1>
+  </div>
+</section>
+<section class="block tight">
+  <div class="wrap prose">
+    <nav class="toc" aria-label="Contents"><h2>Contents</h2><ul class="list">{toc}</ul></nav>
+    {body}
+  </div>
+</section>
+''')
+
+
+CLEARDAY_PRIVACY = policy_page("clearday-privacy", "/products/clearday/privacy/",
+  "How Clearday collects, uses, shares and protects your information, and your choices.")
+CLEARDAY_CHD_PAGE = policy_page("clearday-consumer-health-data", "/products/clearday/consumer-health-data/",
+  "Clearday's Consumer Health Data Privacy Policy for Washington and Nevada.")
+
 NOT_FOUND = page(f"Page not found · {LEGAL_NAME}", "This page could not be found.", "", f'''
 <section class="page-head">
   <div class="wrap">
@@ -326,8 +400,18 @@ NOT_FOUND = page(f"Page not found · {LEGAL_NAME}", "This page could not be foun
 FILES = {
     "index.html": HOME, "products/index.html": PRODUCTS, "products/clearday/index.html": CLEARDAY,
     "contact/index.html": CONTACT, "privacy/index.html": PRIVACY, "terms/index.html": TERMS,
-    "404.html": NOT_FOUND, "CNAME": "mentalhealthtools.net\n",
+    "404.html": NOT_FOUND, "CNAME": "mentalhealthtools.net",  # no newline: matches the file GitHub created
 }
+POLICY_PAGES = {"products/clearday/privacy/index.html": CLEARDAY_PRIVACY,
+                "products/clearday/consumer-health-data/index.html": CLEARDAY_CHD_PAGE}
+if not DRAFT and os.path.isdir(os.path.join(HERE, "_draft")):
+    shutil.rmtree(os.path.join(HERE, "_draft"))   # published: no draft copies left lying around
+for rel, content in POLICY_PAGES.items():
+    live, draft = os.path.join(HERE, rel), os.path.join(HERE, "_draft", rel)
+    FILES[os.path.join("_draft", rel) if DRAFT else rel] = content
+    stale = live if DRAFT else draft            # never leave the other mode's copy behind
+    if os.path.exists(stale):
+        os.remove(stale)
 for rel, content in FILES.items():
     path = os.path.join(HERE, rel)
     os.makedirs(os.path.dirname(path), exist_ok=True)

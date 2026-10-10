@@ -93,6 +93,14 @@ p{margin:0 0 14px;max-width:68ch;overflow-wrap:break-word}
 .prose{max-width:760px}
 .prose h2{margin-top:34px}
 .updated{color:var(--muted);font-size:15px;margin-top:10px}
+.prose h2{scroll-margin-top:16px}
+.prose h3{margin-top:22px}
+.toc{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:4px 0 30px}
+.toc h2{font-size:18px;margin:0 0 10px}
+.toc .list li{margin-bottom:6px}
+/* review builds only (DRAFT = True in _build.py) */
+.draft-banner{background:#FFF4CC;border:1px solid #E6B94F;color:var(--ink);border-radius:10px;padding:12px 16px;margin:0 0 18px;font-size:15px}
+mark.ph{background:#FFE58A;color:var(--ink);padding:0 3px;border-radius:3px}
 
 
 /* footer */
