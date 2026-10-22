@@ -23,14 +23,20 @@ UPDATED = "September 27, 2026"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # Clearday's policies live as data in _policies/ (never published as-is) and
-# are rendered below. PUBLISH_DATE is the day they take effect. While it's None
+# are rendered below. PUBLISH_DATE is the day they took effect. While it's None
 # the build makes a review copy: a "Draft for review" banner on each policy
 # page and the open blanks highlighted. On publish day set it, e.g.
 #     PUBLISH_DATE = "October 14, 2026"
 # and rebuild: the date fills in [EFFECTIVE DATE] on both pages (and the website
 # privacy page's date), the banner goes, and the build refuses to run if any
 # other blank is still open.
+#
+# After publishing, leave PUBLISH_DATE alone. For a later edit to a policy, set
+# POLICIES_UPDATED to the day of the edit: it fills [LAST UPDATED] on both pages.
+# A material change (a new use, a new kind of company we share with) also needs
+# the advance email the policy promises, and a new effective date.
 PUBLISH_DATE = "October 10, 2026"
+POLICIES_UPDATED = "October 22, 2026"   # removed the Lifetime option
 DRAFT = PUBLISH_DATE is None
 
 # Draft mode builds the live site exactly as it was before the policies (so a
@@ -137,7 +143,7 @@ CLEARDAY_SUMMARY = f'''<article class="product">
       <div class="product-body">
         <h3 class="product-name">Clearday</h3>
         <p class="product-tag">A self-help app for anyone who wants to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
-        <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 3-day trial, then a subscription</p>
+        <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 7-day trial, then a subscription</p>
         <a class="more" href="/products/clearday/">Clearday details and support</a>
       </div>
     </article>'''
@@ -220,7 +226,7 @@ CLEARDAY = page(f"Clearday · {LEGAL_NAME}",
       <div>
         <h1 class="app-name">Clearday</h1>
         <p class="lede">A self-help app for anyone who wants to cut back on or quit cannabis, alcohol, nicotine, vaping or stimulants, at their own pace.</p>
-        <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 3-day trial, then a subscription. SOS for cravings is always free.</p>
+        <p class="meta"><span class="badge">Coming soon</span> iPhone &middot; Free 7-day trial, then a subscription. SOS for cravings is always free.</p>
       </div>
     </div>
   </div>
@@ -358,11 +364,12 @@ def policy_page(name, url_path, description):
         f'<h2 id="{s["id"]}">{s["heading"]}</h2>{s["html"]}' for s in doc["sections"])
     if PUBLISH_DATE:
         body = body.replace("[EFFECTIVE DATE]", PUBLISH_DATE)
-    holes = sorted(set(re.findall(r"\[(?:EFFECTIVE DATE|CONFIRM:[^\]]*)\]", body)))
+        body = body.replace("[LAST UPDATED]", POLICIES_UPDATED or PUBLISH_DATE)
+    holes = sorted(set(re.findall(r"\[(?:EFFECTIVE DATE|LAST UPDATED|CONFIRM:[^\]]*)\]", body)))
     if holes and not DRAFT:
         raise SystemExit(f"{name}: fill these before publishing: {holes}")
     if DRAFT:
-        body = re.sub(r"(\[(?:EFFECTIVE DATE|CONFIRM:[^\]]*)\])", r'<mark class="ph">\1</mark>', body)
+        body = re.sub(r"(\[(?:EFFECTIVE DATE|LAST UPDATED|CONFIRM:[^\]]*)\])", r'<mark class="ph">\1</mark>', body)
     toc = "".join(f'<li><a href="#{s["id"]}">{s["heading"]}</a></li>' for s in doc["sections"])
     banner = ('<p class="draft-banner"><b>Draft for review.</b> Not published. '
               'Highlighted items still need to be filled in.</p>') if DRAFT else ""
