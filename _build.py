@@ -36,7 +36,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # A material change (a new use, a new kind of company we share with) also needs
 # the advance email the policy promises, and a new effective date.
 PUBLISH_DATE = "October 10, 2026"
-POLICIES_UPDATED = "October 22, 2026"   # removed the Lifetime option
+POLICIES_UPDATED = "October 27, 2026"   # purchase checking: signed Apple records and notices, per billing period
 DRAFT = PUBLISH_DATE is None
 
 # Draft mode builds the live site exactly as it was before the policies (so a
